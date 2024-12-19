@@ -74,7 +74,7 @@ maxx = 10.0
 num_wolves = 50
 max_iter = 50
 
-
+print("Niket Dugar 1BM22CS180")
 print("Optimizing Rastrigin Function")
 best_position_rastrigin, best_fitness_rastrigin = gwo(fitness_rastrigin, max_iter, num_wolves, dim, minx, maxx)
 print(f"Best position: {best_position_rastrigin}")
