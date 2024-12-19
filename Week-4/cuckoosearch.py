@@ -36,5 +36,6 @@ def cuckoo_search(num_nests=25, num_iterations=50, discovery_rate=0.25, dimensio
     return best_nest, best_fitness
 
 best_solution, best_value = cuckoo_search()
+print("Niket Dugar 1BM22CS180")
 print("Final best solution found:", best_solution)
 print("Final objective function value:", best_value)
