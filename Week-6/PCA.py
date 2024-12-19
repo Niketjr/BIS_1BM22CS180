@@ -46,7 +46,6 @@ def update_cell(population, fitness_grid, i, j, minx, maxx):
     return new_position
 
 population = initialize_population(grid_size, dim, minx, maxx)
-print("Prajwal.P 1BM22CS200\n")
 for iteration in range(max_iterations):
     fitness_grid = evaluate_fitness(population)
     
