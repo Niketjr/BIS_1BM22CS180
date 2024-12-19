@@ -1,73 +1,108 @@
 import random
+import numpy as np
 
-# Genetic Algorithm parameters
-POPULATION_SIZE = 100
-GENES = '''abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOP 
-QRSTUVWXYZ 1234567890, .-;:_!"#%&/()=?@${[]}'''
-TARGET = "cogito ergo sum"
+def genetic_algorithm(
+    fitness_function, 
+    solution_bounds, 
+    population_size=100, 
+    crossover_rate=0.8, 
+    mutation_rate=0.1, 
+    generations=50
+):
+    """
+    Genetic Algorithm for optimization.
 
-class Individual:
-    def __init__(self, chromosome):
-        self.chromosome = chromosome
-        self.fitness = self.calculate_fitness()
+    Parameters:
+        fitness_function: callable
+            Function to evaluate solution quality.
+        solution_bounds: tuple
+            Bounds for each dimension of the solution (lower, upper).
+        population_size: int
+            Number of individuals in the population.
+        crossover_rate: float
+            Probability of crossover.
+        mutation_rate: float
+            Probability of mutation.
+        generations: int
+            Number of generations.
 
-    @classmethod
-    def mutated_gene(cls):
-        return random.choice(GENES)
+    Returns:
+        Best solution and its fitness.
+    """
+    lower_bound, upper_bound = solution_bounds
+    num_dimensions = len(lower_bound)
 
-    @classmethod
-    def create_genome(cls):
-        return [cls.mutated_gene() for _ in range(len(TARGET))]
+    # Initialize population
+    population = np.random.uniform(lower_bound, upper_bound, (population_size, num_dimensions))
 
-    def mate(self, partner):
-        """
-        Perform crossover and mutation to generate offspring.
-        """
-        child_chromosome = [
-            gp1 if random.random() < 0.45 else
-            gp2 if random.random() < 0.90 else
-            self.mutated_gene()
-            for gp1, gp2 in zip(self.chromosome, partner.chromosome)
-        ]
-        return Individual(child_chromosome)
+    def select_parents(population, fitness):
+        """Select two parents using tournament selection."""
+        idx1, idx2 = np.random.choice(len(population), size=2, replace=False)
+        return population[idx1] if fitness[idx1] > fitness[idx2] else population[idx2]
 
-    def calculate_fitness(self):
-        """
-        Calculate fitness as the number of characters that differ from the target.
-        """
-        return sum(gs != gt for gs, gt in zip(self.chromosome, TARGET))
+    def crossover(parent1, parent2):
+        """Perform single-point crossover."""
+        if random.random() < crossover_rate:
+            crossover_point = random.randint(1, num_dimensions - 1)
+            child1 = np.concatenate([parent1[:crossover_point], parent2[crossover_point:]])
+            child2 = np.concatenate([parent2[:crossover_point], parent1[crossover_point:]])
+            return child1, child2
+        return parent1.copy(), parent2.copy()
 
-def main():
-    generation = 1
-    population = [Individual(Individual.create_genome()) for _ in range(POPULATION_SIZE)]
+    def mutate(individual):
+        """Apply mutation to an individual."""
+        for i in range(num_dimensions):
+            if random.random() < mutation_rate:
+                individual[i] = random.uniform(lower_bound[i], upper_bound[i])
 
-    while True:
-        # Sort population by fitness (lower is better)
-        population.sort(key=lambda x: x.fitness)
+    # Evaluate initial population
+    fitness = np.array([fitness_function(ind) for ind in population])
 
-        # Check if the best individual has reached the target
-        if population[0].fitness == 0:
-            break
+    for generation in range(generations):
+        new_population = []
 
-        # Elitism: carry over top 10% of the population
-        next_generation = population[:POPULATION_SIZE // 10]
+        # Elitism: retain the best individual
+        best_index = np.argmax(fitness)
+        new_population.append(population[best_index])
 
-        # Generate the remaining 90% of the new population
-        for _ in range(POPULATION_SIZE - len(next_generation)):
-            parent1 = random.choice(population[:50])  # Top 50 for parent selection
-            parent2 = random.choice(population[:50])
-            child = parent1.mate(parent2)
-            next_generation.append(child)
+        # Generate new population
+        while len(new_population) < population_size:
+            parent1 = select_parents(population, fitness)
+            parent2 = select_parents(population, fitness)
 
-        population = next_generation
+            child1, child2 = crossover(parent1, parent2)
 
-        # Print the best individual of this generation
-        print(f"Generation: {generation}\tString: {''.join(population[0].chromosome)}\tFitness: {population[0].fitness}")
-        generation += 1
+            mutate(child1)
+            mutate(child2)
 
-    # Print the final result
-    print(f"Generation: {generation}\tString: {''.join(population[0].chromosome)}\tFitness: {population[0].fitness}")
+            new_population.extend([child1, child2])
 
-if __name__ == '__main__':
-    print("Prajwal.P 1BM22CS200\n")
-    main()
+        population = np.array(new_population[:population_size])
+        fitness = np.array([fitness_function(ind) for ind in population])
+
+        # Log progress
+        best_fitness = np.max(fitness)
+        print(f"Generation {generation + 1}: Best Fitness = {best_fitness}")
+
+    # Return the best solution
+    best_index = np.argmax(fitness)
+    return population[best_index], fitness[best_index]
+
+# Example usage
+def example_fitness_function(x):
+    """Example fitness function: Sphere function."""
+    return -np.sum(x**2)  # Minimize sum of squares (negative for maximization)
+
+# Define problem bounds (2D problem)
+solution_bounds = ([-10, -10], [10, 10])
+
+best_solution, best_fitness = genetic_algorithm(
+    fitness_function=example_fitness_function,
+    solution_bounds=solution_bounds,
+    population_size=50,
+    generations=20
+)
+
+print("Best Solution:", best_solution)
+print("Best Fitness:", best_fitness)
+print("Niket Dugar 1BM22CS180")
