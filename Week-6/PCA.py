@@ -63,5 +63,6 @@ for iteration in range(max_iterations):
 best_index = np.unravel_index(np.argmin(fitness_grid), fitness_grid.shape)
 best_position = population[best_index[0], best_index[1]]
 best_fitness = np.min(fitness_grid)
+print("Niket Dugar 1BM22CS180")
 print("Best Position Found:", best_position)
 print("Best Fitness Found:", best_fitness)
