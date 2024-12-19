@@ -59,6 +59,7 @@ for generation in range(num_generations):
     selected_population = tournament_selection(population, fitness)
     offspring_population = crossover(selected_population, crossover_rate)
     population = mutate(offspring_population, mutation_rate, bounds)
+    print("Niket Dugar 1BM22CS180\n")
     print(f"Generation {generation + 1}: Best Fitness = {best_fitness}")
 
 print(f"Best solution: x = {best_solution[0]}, f(x) = {best_fitness}")
